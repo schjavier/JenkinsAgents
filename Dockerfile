@@ -1,33 +1,28 @@
-FROM maven:3.9.5-jdk-17-slim
+FROM jenkins/inbound-agent:alpine-jdk17
 
 USER root
 
-RUN apt-get update && apt-get install -y --no-install-recomends \
-    git \
-    curl \
-    #Docker CLI \
-    ca-certificates \
-    gnupg \
+RUN apk update &&\
+    apk add --no-cache git \
+    curl  \
+    maven  \
+    docker \
     &&\
-    install -m 0755 -d /etc/apt/keyrings && \
-    curl -fsSl https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
-    chmod a+r /etc/apt/keyrings/docker.gpg && \
-    echo \
-    "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-    "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-    tee /etc/apt/sources.list.d/docker.list > /dev/null && \
-    apt-get update && \
-    apt-get install -y docker-ce-cli && \
-    curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
-    chmod +x /usr/local/bin/docker-compose && \
-    \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/cache/apt/*
+    rm -rf /var/cache/apk/*
 
-RUN useradd -ms /bin/bash jenkins
+#Libreria necesaioa para correr docker compose en alpine linux
+
+ENV GLIBC_VERSION 2.35-r1
+RUN apk add --no-cache ca-certificates wget && \
+    wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
+    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-${GLIBC_VERSION}.apk && \
+    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-bin-${GLIBC_VERSION}.apk && \
+    apk add --no-cache glibc-${GLIBC_VERSION}.apk glibc-bin-${GLIBC_VERSION}.apk && \
+    rm glibc-${GLIBC_VERSION}.apk glibc-bin-${GLIBC_VERSION}.apk
+
+# Intalacion de docker-compose
+ENV DOCKER_COMPOSE_VERSION=1.29.2
+RUN curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 -o /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose
 
 USER jenkins
-WORKDIR /home/jenkins
-
-ENV JAVA_HOME /usr/local/openjdk-17
-ENV PATH $PATH:$JAVA_HOME/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin
