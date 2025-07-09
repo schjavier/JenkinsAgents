@@ -10,15 +10,8 @@ RUN apk update &&\
     &&\
     rm -rf /var/cache/apk/*
 
-#Libreria necesaioa para correr docker compose en alpine linux
-
-ENV GLIBC_VERSION 2.35-r1
-RUN apk add --no-cache ca-certificates wget && \
-    wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
-    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-${GLIBC_VERSION}.apk && \
-    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-bin-${GLIBC_VERSION}.apk && \
-    apk add --no-cache glibc-${GLIBC_VERSION}.apk glibc-bin-${GLIBC_VERSION}.apk && \
-    rm glibc-${GLIBC_VERSION}.apk glibc-bin-${GLIBC_VERSION}.apk
+#Libreria necesaria para correr docker compose en alpine linux
+RUN apk add --no-cache gcompat
 
 # Intalacion de docker-compose
 ENV DOCKER_COMPOSE_VERSION=1.29.2
