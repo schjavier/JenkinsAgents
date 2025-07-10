@@ -7,15 +7,14 @@ RUN apk update &&\
     curl  \
     maven  \
     docker \
+    gcompat \
     &&\
     rm -rf /var/cache/apk/*
 
-#Libreria necesaria para correr docker compose en alpine linux
-RUN apk add --no-cache gcompat
-
 # Intalacion de docker-compose
-ENV DOCKER_COMPOSE_VERSION=1.29.2
-RUN curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 -o /usr/local/bin/docker-compose && \
-    chmod +x /usr/local/bin/docker-compose
+ENV DOCKER_COMPOSE_VERSION=v2.38.2
+RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
+    curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_V2_VERSION}/docker-compose-linux-amd64 -o /usr/local/lib/docker/cli-plugins/docker-compose && \
+    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 USER jenkins
